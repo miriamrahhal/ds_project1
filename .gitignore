@@ -3,3 +3,5 @@ data/
 .venv/
 __pycache__/
 .pytest_cache/
+sample.bin
+rep.bin

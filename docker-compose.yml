@@ -14,6 +14,30 @@ services:
     container_name: metadata
     ports:
       - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://dsuser:dsdevpassword@postgres:5432/dsmetadata
+      REPLICAS: "3"
+      WRITE_QUORUM: "2"
+      READ_QUORUM: "2"
+      INITIAL_NODES: node1,node2,node3,node4,node5,node6
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: ds-postgres
+    environment:
+      POSTGRES_DB: dsmetadata
+      POSTGRES_USER: dsuser
+      POSTGRES_PASSWORD: dsdevpassword
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U dsuser -d dsmetadata" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   node1:
     <<: *storage-node
@@ -66,8 +90,33 @@ services:
       - "8204:8000"
     volumes:
       - node4-data:/data
+  node5:
+    <<: *storage-node
+    container_name: node5
+    environment:
+      NODE_ID: node5
+      NODE_URL: http://node5:8000
+      METADATA_URL: http://metadata:8000
+      DATA_DIR: /data
+    ports:
+      - "8205:8000"
+    volumes:
+      - node5-data:/data
 
+  node6:
+    <<: *storage-node
+    container_name: node6
+    environment:
+      NODE_ID: node6
+      NODE_URL: http://node6:8000
+      METADATA_URL: http://metadata:8000
+      DATA_DIR: /data
+    ports:
+      - "8206:8000"
+    volumes:
+      - node6-data:/data
 volumes:
+
   node1-data:
     name: ds_node1_data
     external: true
@@ -80,3 +129,10 @@ volumes:
   node4-data:
     name: ds_node4_data
     external: true
+  node5-data:
+    name: ds_node5_data
+    external: true
+  node6-data:
+    name: ds_node6_data
+    external: true
+  postgres-data:
