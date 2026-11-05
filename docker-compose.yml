@@ -1,0 +1,82 @@
+x-storage-node: &storage-node
+  build:
+    context: .
+    dockerfile: storage_node/Dockerfile
+  depends_on:
+    - metadata
+  restart: unless-stopped
+
+services:
+  metadata:
+    build:
+      context: .
+      dockerfile: metadata_service/Dockerfile
+    container_name: metadata
+    ports:
+      - "8000:8000"
+
+  node1:
+    <<: *storage-node
+    container_name: node1
+    environment:
+      NODE_ID: node1
+      NODE_URL: http://node1:8000
+      METADATA_URL: http://metadata:8000
+      DATA_DIR: /data
+    ports:
+      - "8201:8000"
+    volumes:
+      - node1-data:/data
+
+  node2:
+    <<: *storage-node
+    container_name: node2
+    environment:
+      NODE_ID: node2
+      NODE_URL: http://node2:8000
+      METADATA_URL: http://metadata:8000
+      DATA_DIR: /data
+    ports:
+      - "8202:8000"
+    volumes:
+      - node2-data:/data
+
+  node3:
+    <<: *storage-node
+    container_name: node3
+    environment:
+      NODE_ID: node3
+      NODE_URL: http://node3:8000
+      METADATA_URL: http://metadata:8000
+      DATA_DIR: /data
+    ports:
+      - "8203:8000"
+    volumes:
+      - node3-data:/data
+
+  node4:
+    <<: *storage-node
+    container_name: node4
+    environment:
+      NODE_ID: node4
+      NODE_URL: http://node4:8000
+      METADATA_URL: http://metadata:8000
+      DATA_DIR: /data
+    ports:
+      - "8204:8000"
+    volumes:
+      - node4-data:/data
+
+volumes:
+  node1-data:
+    name: ds_node1_data
+    external: true
+  node2-data:
+    name: ds_node2_data
+    external: true
+  node3-data:
+    name: ds_node3_data
+    external: true
+  node4-data:
+    name: ds_node4_data
+    external: true
